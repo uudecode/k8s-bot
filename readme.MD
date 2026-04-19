@@ -1,21 +1,37 @@
 
-# 🤖 k8s-bot
-**k8s-bot** — это инструмент для мониторинга Kubernetes-кластера и статуса приложений в ArgoCD с уведомлениями в Telegram.
-## 🚀 Возможности
- * **Мониторинг нод:** Следит за состоянием нод кластера и нагрузкой.
- * **ArgoCD Watcher:** Отслеживает статус синхронизации (Sync Status) и здоровья (Health Status) приложений.
- * **Уведомления:** Мгновенная отправка отчетов в Telegram.
-## 🛠 Конфигурация
-Бот использует config.toml для настроек, а чувствительные данные (токены) забирает из переменных окружения.
-### Переменные окружения
-Перед запуском установите следующие переменные:
- * TELEGRAM_BOT_TOKEN — токен вашего бота.
- * TELEGRAM_CHAT_ID — ID чата для уведомлений.
- * K8S_API_URL — адрес API вашего кластера.
- * K8S_SERVICE_TOKEN — токен сервисного аккаунта для доступа к API.
-### config.toml
-Пример файла конфигурации:
+# k8s-bot
+
+`k8s-bot` is a Go-based Telegram bot for monitoring a Kubernetes cluster and Argo CD applications.
+
+## Features
+
+- Kubernetes node monitoring
+- Argo CD application health and sync status tracking
+- Telegram notifications for startup reports and alerts
+- Configurable logging level
+- Optional Telegram proxy support
+
+## Configuration
+
+The application reads configuration from `config.toml` in the project root and from environment variables with the `K8SBOT_` prefix.
+
+### Environment variables
+
+The following environment variables are supported:
+
+- `K8SBOT_CLUSTER_API_URL` — Kubernetes API server URL
+- `K8SBOT_CLUSTER_TOKEN` — Kubernetes service account token
+- `K8SBOT_TELEGRAM_TOKEN` — Telegram bot token
+- `K8SBOT_TELEGRAM_CHAT_ID` — Telegram chat ID
+- `K8SBOT_TELEGRAM_PROXY` — Optional HTTP/HTTPS proxy for Telegram requests
+
+### `config.toml`
+
+Example configuration:
+
 ```toml
+[app]
+log_level = "info"
 [monitoring]
 check_interval = "60s"
 nodes_enabled = true
@@ -24,28 +40,22 @@ argocd_enabled = true
 [namespaces]
 include = ["default", "production"]
 
+[cluster]
+api_url = "https://k8s.acme.com:6443"
+token = "xxx"
+
+[telegram]
+token = "xxx"
+chat_id = "xxx"
+proxy = ""
+
 ```
-## 📋 Архитектура
-## 🚀 Запуск
- 1. **Клонирование:**
-   ```bash
-   git clone https://github.com/your-username/k8s-bot.git
-   cd k8s-bot
-   
-   ```
- 2. **Сборка:**
-   ```bash
-   go build -o k8s-bot main.go
-   
-   ```
- 3. **Запуск:**
-   ```bash
-   # Экспорт переменных и запуск
-   export TELEGRAM_BOT_TOKEN="ваш_токен"
-   export K8S_SERVICE_TOKEN="ваш_токен_са"
-   
-   ./k8s-bot --config=config.toml
-   
-   ```
-*Сделано с любовью к Kubernetes и Go.*
+
+## Notes
+
+- `check_interval`, `nodes_enabled`, `argocd_enabled`, and `namespaces.include` are present in configuration, but not all of them are currently used in the code.
+- The Kubernetes client is configured with `insecure: true`, so TLS verification is disabled.
+- Keep secrets out of the repository.
+
+
 

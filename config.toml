@@ -1,0 +1,18 @@
+[app]
+log_level = "info"
+[monitoring]
+check_interval = "60s"
+nodes_enabled = true
+argocd_enabled = true
+
+[namespaces]
+include = ["default", "production"]
+
+[cluster]
+api_url = "https://k8s.acme.com:6443"
+token = "xxx"
+
+[telegram]
+token = "xxx"
+chat_id = "xxx"
+proxy = ""
