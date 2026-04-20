@@ -1,6 +1,7 @@
 package di
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -26,11 +27,15 @@ var SuperSet = wire.NewSet(
 )
 
 func ProvideK8sClient(cfg *config.Config) (*kubernetes.Clientset, error) {
-	return kubernetes.NewForConfig(&rest.Config{
+	client, err := kubernetes.NewForConfig(&rest.Config{
 		Host:            cfg.Cluster.APIURL,
 		BearerToken:     cfg.Cluster.Token,
 		TLSClientConfig: rest.TLSClientConfig{Insecure: true},
 	})
+	if err != nil {
+		return nil, fmt.Errorf("kubernetes: create clientset: %w", err)
+	}
+	return client, nil
 }
 
 func ProvideBot(cfg *config.Config) (*tgbotapi.BotAPI, error) {
@@ -38,7 +43,7 @@ func ProvideBot(cfg *config.Config) (*tgbotapi.BotAPI, error) {
 	if cfg.Telegram.Proxy != "" {
 		proxyURL, err := url.Parse(cfg.Telegram.Proxy)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("telegram: parse proxy url: %w", err)
 		}
 		client.Transport = &http.Transport{
 			Proxy: http.ProxyURL(proxyURL),
@@ -46,7 +51,7 @@ func ProvideBot(cfg *config.Config) (*tgbotapi.BotAPI, error) {
 	}
 	bot, err := tgbotapi.NewBotAPIWithClient(cfg.Telegram.Token, tgbotapi.APIEndpoint, client)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("telegram: create bot client: %w", err)
 	}
 	return bot, nil
 }

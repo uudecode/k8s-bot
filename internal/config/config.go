@@ -2,6 +2,7 @@ package config
 
 import (
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -9,12 +10,16 @@ import (
 type Config struct {
 	App struct {
 		LogLevel string `mapstructure:"log_level"`
-	}
+	} `mapstructure:"app"`
 	Monitoring struct {
-		CheckInterval string `mapstructure:"check_interval"`
-		NodesEnabled  bool   `mapstructure:"nodes_enabled"`
-		ArgoEnabled   bool   `mapstructure:"argocd_enabled"`
+		APIProbeInterval    time.Duration `mapstructure:"api_probe_interval"`
+		AlertRepeatInterval time.Duration `mapstructure:"alert_repeat_interval"`
+		NodesEnabled        bool          `mapstructure:"nodes_enabled"`
+		ArgoEnabled         bool          `mapstructure:"argocd_enabled"`
 	} `mapstructure:"monitoring"`
+	ArgoCD struct {
+		Name string `mapstructure:"name"`
+	} `mapstructure:"argocd"`
 	Cluster struct {
 		APIURL string `mapstructure:"api_url"`
 		Token  string `mapstructure:"token"`
@@ -44,6 +49,11 @@ func NewConfig() (*Config, error) {
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
-
+	if cfg.Monitoring.APIProbeInterval <= 0 {
+		cfg.Monitoring.APIProbeInterval = time.Minute
+	}
+	if cfg.Monitoring.AlertRepeatInterval <= 0 {
+		cfg.Monitoring.AlertRepeatInterval = 5 * time.Minute
+	}
 	return &cfg, nil
 }
