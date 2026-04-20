@@ -38,6 +38,7 @@ func NewConfig() (*Config, error) {
 	v.SetConfigType("toml")
 	v.AddConfigPath(".")
 	v.AddConfigPath("./internal/app")
+	v.AddConfigPath("/etc/k8s-bot")
 
 	v.SetEnvPrefix("K8SBOT")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
