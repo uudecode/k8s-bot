@@ -22,7 +22,7 @@ func (s *Service) WatchArgoApps(ctx context.Context) {
 		status, _ := app.Object["status"].(map[string]interface{})
 		healthObj, _ := status["health"].(map[string]interface{})
 		health := healthObj["status"].(string)
-		s.Logger.Info().
+		s.Logger.Debug().
 			Str("event_type", string(event.Type)).
 			Str("app_name", app.GetName()).
 			Str("health", health).
