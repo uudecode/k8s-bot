@@ -60,13 +60,15 @@ Example configuration:
 ```toml
 [app]
 log_level = "info"
+
+[argocd]
+namespace = "argocd"
+
 [monitoring]
-check_interval = "60s"
+api_probe_interval = "60s"
+alert_repeat_interval = "5m"
 nodes_enabled = true
 argocd_enabled = true
-
-[namespaces]
-include = ["default", "production"]
 
 [cluster]
 api_url = "https://k8s.acme.com:6443"
@@ -74,7 +76,7 @@ token = "xxx"
 
 [telegram]
 token = "xxx"
-chat_id = 123456789
+chat_id = -11111
 proxy = ""
 
 ```
