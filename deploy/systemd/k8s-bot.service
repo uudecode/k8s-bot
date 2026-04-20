@@ -5,11 +5,15 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+User=k8s-bot
+Group=k8s-bot
+
 WorkingDirectory=/opt/k8s-bot
 ExecStart=/opt/k8s-bot/k8s-bot
 Restart=always
 RestartSec=5
 
+EnvironmentFile=/etc/k8s-bot/k8s-bot.env
 Environment=GOMAXPROCS=1
 Environment=GOMEMLIMIT=128MiB
 
@@ -18,6 +22,8 @@ CPUQuota=50%
 
 NoNewPrivileges=true
 PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
 
 [Install]
 WantedBy=multi-user.target

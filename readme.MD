@@ -133,6 +133,13 @@ CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o k8s-bot .
 GOMAXPROCS=1 GOMEMLIMIT=128MiB ./k8s-bot
 ```
 
+```powershell
+$env:GOOS="linux"
+$env:GOARCH="amd64"
+$env:CGO_ENABLED="0"
+go build -trimpath -ldflags="-s -w" -o k8s-bot-linux-amd64 .\cmd\bot\
+```
+
 ## Important notes
 
 - The Kubernetes client is created with `TLSClientConfig.Insecure = true`, so TLS certificate verification is disabled.
