@@ -1,5 +1,5 @@
 [app]
-log_level = "info"
+log_level = "debug"
 
 [argocd]
 namespace = "argocd"

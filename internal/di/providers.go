@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/google/wire"
@@ -31,6 +32,7 @@ func ProvideK8sClient(cfg *config.Config) (*kubernetes.Clientset, error) {
 		Host:            cfg.Cluster.APIURL,
 		BearerToken:     cfg.Cluster.Token,
 		TLSClientConfig: rest.TLSClientConfig{Insecure: true},
+		Timeout:         15 * time.Second,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("kubernetes: create clientset: %w", err)
@@ -39,7 +41,7 @@ func ProvideK8sClient(cfg *config.Config) (*kubernetes.Clientset, error) {
 }
 
 func ProvideBot(cfg *config.Config) (*tgbotapi.BotAPI, error) {
-	client := &http.Client{}
+	client := &http.Client{Timeout: 15 * time.Second}
 	if cfg.Telegram.Proxy != "" {
 		proxyURL, err := url.Parse(cfg.Telegram.Proxy)
 		if err != nil {
@@ -61,6 +63,7 @@ func ProvideDynamicClient(cfg *config.Config) (dynamic.Interface, error) {
 		Host:            cfg.Cluster.APIURL,
 		BearerToken:     cfg.Cluster.Token,
 		TLSClientConfig: rest.TLSClientConfig{Insecure: true},
+		Timeout:         15 * time.Second,
 	}
 	return dynamic.NewForConfig(restCfg)
 }
