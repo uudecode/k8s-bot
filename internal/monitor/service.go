@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/rs/zerolog"
 	"github.com/uudecode/k8s-bot/internal/config"
 	"github.com/uudecode/k8s-bot/internal/notifier"
@@ -19,17 +20,28 @@ type Service struct {
 	K8s          *kubernetes.Clientset
 	Dynamic      dynamic.Interface
 	Notifier     notifier.Notifier
+	Bot          *tgbotapi.BotAPI
+	ChatID       int64
 	mu           sync.RWMutex
 	objectStates map[string]*ObjectState
 }
 
-func NewMonitorService(cfg *config.Config, log zerolog.Logger, k8s *kubernetes.Clientset, dynamic dynamic.Interface, notifier notifier.Notifier) *Service {
+func NewMonitorService(
+	cfg *config.Config,
+	log zerolog.Logger,
+	k8s *kubernetes.Clientset,
+	dynamic dynamic.Interface,
+	notifier notifier.Notifier,
+	bot *tgbotapi.BotAPI,
+) *Service {
 	return &Service{
 		Cfg:          cfg,
 		Logger:       log,
 		K8s:          k8s,
 		Dynamic:      dynamic,
 		Notifier:     notifier,
+		Bot:          bot,
+		ChatID:       cfg.Telegram.ChatID,
 		mu:           sync.RWMutex{},
 		objectStates: make(map[string]*ObjectState, 1024),
 	}
@@ -37,6 +49,7 @@ func NewMonitorService(cfg *config.Config, log zerolog.Logger, k8s *kubernetes.C
 
 func (s *Service) Run(ctx context.Context) error {
 	s.Logger.Info().Msg("Bot started, starting cluster check...")
+	s.registerBotCommands()
 
 	nodes, err := s.K8s.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
@@ -53,7 +66,7 @@ func (s *Service) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := s.SendStartupReport(); err != nil {
+	if err := s.SendStartupReport(ctx); err != nil {
 		s.Logger.Error().Err(err).Msg("Failed to send startup report")
 	}
 
@@ -75,6 +88,10 @@ func (s *Service) Run(ctx context.Context) error {
 
 	g.Go(func() error {
 		return s.RunClusterProbe(ctx)
+	})
+
+	g.Go(func() error {
+		return s.RunTelegramCommands(ctx)
 	})
 
 	return g.Wait()

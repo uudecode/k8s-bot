@@ -34,6 +34,6 @@ func InitializeApp() (*monitor.Service, error) {
 		return nil, err
 	}
 	notifier := di.ProvideNotifier(botAPI, configConfig)
-	service := monitor.NewMonitorService(configConfig, zerologLogger, clientset, dynamicInterface, notifier)
+	service := monitor.NewMonitorService(configConfig, zerologLogger, clientset, dynamicInterface, notifier, botAPI)
 	return service, nil
 }
